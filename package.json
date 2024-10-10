@@ -3,7 +3,7 @@
   "scripts": {
     "build": "next build && rimraf .next/cache",
     "dev": "next dev",
-    "start": "node_modules/next/dist/bin/next start",
+    "start": "next start",
     "start:next": "next start",
     "start:ws": "nodemon server.js",
     "dev:servers": "next dev",
