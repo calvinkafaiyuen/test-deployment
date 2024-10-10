@@ -1,0 +1,621 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialActions"] // You won't need this in Prisma 3.X or higher.
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  password      String
+  role          String
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model about_us_members {
+  id      Int       @id @default(autoincrement())
+  name    String?
+  role    String?
+  type    String?
+  prefix  String?
+  url     String?
+}
+
+model ambassadors {
+  reference_number  Int       @id @default(autoincrement())
+  firstname         String?   @db.VarChar(250)
+  lastname          String?   @db.VarChar(250)
+  email             String?   @db.VarChar(250)
+  phone             String?   @db.VarChar(250)
+  utorid            String?   @db.VarChar(250)
+  linkedin          String?   @db.VarChar(250)
+  program           String?   @db.VarChar(250)
+  gradyear          String?   @db.VarChar(250)
+  date              DateTime  @default(now())
+  status            String?   @db.VarChar(30)
+}
+
+model authority_setting {
+  id              Int       @id @default(autoincrement())
+  email           String?
+  super_admin     String?
+  admin           String?
+  editor          String?
+  viewer          String?
+  date_submitted  DateTime  @default(now())
+  tables_access   String?
+}
+
+model bookmark_searches {
+  search_id             Int         @id @default(autoincrement())
+  deleted               String?
+  search_term           String
+  student_email         String
+  student_id_number     String
+  team_id               String?
+  industry_selection    String?
+  business_selection    String?
+  technical_selection   String?
+  experience_selection  String?
+  creation_time         DateTime?   @default(now())
+  modification_time     DateTime?
+  search_description    String?
+  vector                String?
+  looking_for_teams     Int?        @default(0)
+}
+
+model channel_members {
+  reference         Int         @id @default(autoincrement())
+  channel_id        Int
+  member_name       String?
+  member_id         String?
+  member_email      String?
+  member_team_id    String?
+  status            String?
+  date_created      DateTime    @default(now())
+  subscription      String?     @default("yes")
+}
+
+model channel_messages {
+  message_id      Int         @id @default(autoincrement())
+  channel_id      String?
+  message_text    String?
+  sender_id       String?
+  sender_email    String?
+  date_created    DateTime    @default(now())
+  read_msg        String      @default("false")
+}
+
+model chat_channels {
+  channel_id      Int         @id @default(autoincrement())
+  status          String?
+  date_created    DateTime    @default(now())
+}
+
+model cohorts {
+  name                        String      @id
+  start_date                  DateTime
+  end_date                    DateTime
+  registration_start_date     DateTime
+  registration_end_date       DateTime
+  demo_day_date               DateTime
+  demo_day_location           String
+  demo_day_time               String
+  isActive                    Int         @default(1)
+  limit_team_searches         Int
+  limit_individual_searches   Int
+  isolated                    Int
+  max_contacts                Int
+  uoft                        String
+}
+
+model connectors {
+  id                Int       @id @default(autoincrement())
+  email             String
+  firstname         String
+  lastname          String
+  username          String
+  connector_image   String
+  current_position  String?
+  current_company   String?
+  connector_phone   String?
+  linkedin          String?
+  introduction      String?
+  date_submitted    DateTime  @updatedAt @default(now())
+  contract          String
+  status            String?
+  program           String?
+  class_of          String?
+  resume            String?
+  notes             String?
+  gender            String?
+  expertise         String?
+  comments          String?
+}
+
+model employment {
+  reference         Int       @id @default(autoincrement())
+  firstname         String?   @db.VarChar(50)
+  lastname          String?   @db.VarChar(50)
+  employment_role   String?   @db.VarChar(50)
+  employment_type   String?   @db.VarChar(50)
+  employment_status String?   @db.VarChar(50)
+  resident_status   String?   @db.VarChar(50)
+  email             String?   @db.VarChar(50)
+  phone             String?   @db.VarChar(50)
+  current_address   String?   @db.VarChar(255)
+  current_city      String?   @db.VarChar(50)
+  current_province  String?   @db.VarChar(50)
+  date_start        String?   @db.VarChar(50)
+  date_end          String?   @db.VarChar(50)
+  date_submitted    DateTime  @default(now())
+}
+
+model events {
+  id               Int     @id @default(autoincrement())
+  name             String  @db.VarChar(255)
+  type             String  @db.VarChar(100)
+  speakers         String? @db.VarChar(100)
+  attendance       Int     @default(0)
+  date             String  @db.VarChar(50)
+  location         String  @db.VarChar(100)
+  event_image_path String? @db.VarChar(1000)
+}
+
+model idea { 
+  num_id           Int     @id @default(autoincrement())
+  projectname      String  @db.VarChar(255)
+  firstname        String  @db.VarChar(50)
+  lastname         String  @db.VarChar(50)
+  email            String  @db.VarChar(50)
+  phone            String? @db.VarChar(50)
+  linkedin         String? @db.VarChar(1000)
+  document         String? @db.VarChar(1000)
+  problemstatement String?  @db.Text
+  datesubmit       String  @db.VarChar(50)
+}
+
+model investment_committee {
+  id             Int     @id @default(autoincrement())
+  status         String  @db.VarChar(25)
+  emr_status     Boolean @default(false)
+  date_submitted String  @db.VarChar(50)
+  first_name     String  @db.VarChar(50)
+  middle_name    String? @db.VarChar(50)
+  last_name      String  @db.VarChar(50)
+  email          String  @db.VarChar(50)
+  phone          String? @db.VarChar(50)
+}
+
+model login_logs {
+  id         Int     @id @default(autoincrement()) // added as a key for the model
+  date       String  @db.VarChar(50)
+  user_login String?  @db.VarChar(255)
+  user_role  String?  @db.VarChar(50)
+}
+
+model magic_links {
+  id            Int      @id @default(autoincrement())
+  role          String   @db.VarChar(25)
+  email         String   @db.VarChar(50)
+  token         String   @db.VarChar(255)
+  creation_time DateTime @default(now())
+  expire_time   DateTime 
+  status        String   @db.VarChar(25)
+}
+
+model mentors {
+  id                  Int       @id @default(autoincrement())
+  status              String?   @db.VarChar(1000)
+  emr_status          String?   @db.VarChar(10)
+  date_submitted      DateTime?  @default(now())
+  mentors_id          String?   @db.VarChar(250)
+  team_id             Int?    
+  mentors_initials    String?   @db.VarChar(20)
+  first_name          String?   @db.VarChar(250)
+  middle_name         String?   @db.VarChar(250)
+  last_name           String?   @db.VarChar(250)
+  current_position    String?   @db.VarChar(250)
+  previous_position   String?   @db.VarChar(250)
+  current_company     String?   @db.VarChar(100)
+  expertise           String?   @db.Text
+  skills              String?   @db.Text
+  activities          String?   @db.Text
+  current_start       String?   @db.VarChar(20)
+  school              String?   @db.VarChar(250)
+  school_start        String?   @db.VarChar(20)
+  school_end          String?   @db.VarChar(20)
+  degree              String?   @db.VarChar(250)
+  mentor_program      String?   @db.VarChar(250)
+  mentor_email        String?   @db.VarChar(100)
+  mentor_phone        String?   @db.VarChar(20)
+  mentor_twitter      String?   @db.VarChar(250)
+  mentor_availability String?   @db.Text
+  mentor_image        String?   @db.VarChar(250)
+  campus              String?   @db.VarChar(250)
+  resume              String    @db.VarChar(300)
+  linkedin            String    @db.VarChar(300)
+  gender              String?   @db.Text
+  bio                 String?   @db.Text
+  notes               String?   @db.Text
+  agreement           String?   @db.Text
+  emr_agreement       String?   @db.Text
+  introduction        String?   @db.Text
+  agreement_date      DateTime?
+  industry            String?   @db.Text
+  comments            String?   @db.Text
+}
+
+model mentor_notes {
+  id                Int       @id @default(autoincrement())
+  mentor_email      String?    @db.VarChar(75)
+  note_content      String?    @db.Text
+  creator           String     @db.VarChar(75)
+  created_on        DateTime?  @default(now())
+  last_editor       String     @db.VarChar(75)
+  last_edit_on      DateTime?  @default(now())
+}
+
+model myers_briggs {
+  id     Int    @id @default(autoincrement())
+  target String @db.VarChar(10)
+  entj   Int
+  entp   Int
+  intj   Int
+  intp   Int
+  estj   Int
+  esfj   Int
+  istj   Int
+  isfj   Int
+  enfj   Int
+  enfp   Int
+  infj   Int
+  infp   Int
+  estp   Int
+  esfp   Int
+  istp   Int
+  isfp   Int
+}
+
+model pitches {
+  project_id        Int?      
+  video_url         String?   @db.VarChar(1000)
+  pitching_comment  String?   @db.Text
+  meeting_minutes   String?   @db.Text
+  date_submitted    DateTime  @default(now())
+  pitch_name        String?   @db.VarChar(255)
+  team_id           Int?
+  pitch_reference   Int      @id @default(autoincrement())
+  presentation_date DateTime?
+  status            String?   @db.VarChar(10)
+}
+
+model pitches_history {
+  id                Int      @id @default(autoincrement())
+  pitch_reference   Int
+  pitching_comment String?  @db.Text
+  updated_at        DateTime @default(now())
+}
+
+model pitch_names {
+  id                Int      @id @default(autoincrement())
+  pitch_name        String   @db.VarChar(50)
+  date_created      DateTime @default(now())
+}
+
+model projects {
+  project_id        Int     @id @default(autoincrement())
+  project_logo      String? @db.VarChar(1100)
+  project_name      String? @db.VarChar(100)
+  startup_idea      String? @db.VarChar(1200)
+  problem_statement String  @db.Text
+  customers         String? @db.VarChar(1300)
+  startup_name      String  @db.VarChar(100)
+  video             String? @db.VarChar(1400)
+  key_features      String? @db.Text
+}
+
+model project_connector_rlshp {
+  project_id   Int
+  connector_id Int    
+  @@id([project_id, connector_id])
+}
+
+model project_mentor_rlshp {
+  project_id Int    
+  mentor_id  String @db.VarChar(50) 
+  @@id([project_id, mentor_id])
+}
+
+model reset_password {
+  email  String @db.VarChar(75)
+  token  String @id @db.Text
+  expiryDate DateTime @db.Date
+}
+
+// internal relationships
+model resources {
+    id            Int     @id @default(autoincrement())
+    item_order    Int?
+    type          String  @db.VarChar(25)
+    resource_name String  @db.VarChar(255)
+    doc_path      String  @db.VarChar(500)
+    url           String  @db.VarChar(255)
+    admin         Boolean @default(true) // tinyint(1)
+    mentor        Boolean @default(false)
+    connector     Boolean @default(false)
+    student       Boolean @default(false)
+    category      String? @db.VarChar(255)
+}
+
+// internal relationships, date end not used
+model service_provider {
+    reference      Int      @id @default(autoincrement())
+    document       String?  @db.VarChar(500)
+    fullname       String?  @db.VarChar(100)
+    email          String?  @db.VarChar(50)
+    phone          String?  @db.VarChar(50)
+    service_type   String?  @db.VarChar(50)
+    status         String?  @db.VarChar(50)
+    address        String?  @db.VarChar(100)
+    city           String?  @db.VarChar(50)
+    country        String?  @db.VarChar(50)
+    company        String?  @db.VarChar(100)
+    date_start     String?  @db.VarChar(50)
+    date_end       String?  @db.VarChar(50)
+    date_submitted DateTime @default(now())
+}
+
+model score_controllers {
+    id          Int     @id @default(autoincrement())
+    nlp_score   Int?     
+    box_score   Int?     
+    mbp_screo   Int?    
+}
+
+// internal relationships
+model skills {
+    skill_id    Int    @id @default(autoincrement())
+    skill_name  String @db.VarChar(150)
+    skill_categ Int
+}
+
+model skills_list {
+    skill_id   Int    @id @default(autoincrement()) //UnsignedMediumInt
+    skill_name String @db.VarChar(45)
+}
+
+model skills_categories {
+    categ_id   Int      @id @default(autoincrement())
+    categ_name String   @db.VarChar(150)
+    categ_icon String?  @db.VarChar(150)
+}
+
+model students {
+    validation             String?   @db.VarChar(100)
+    student_num            Int       @id @default(autoincrement())
+    uoft_email             String    @db.VarChar(200)
+    firstname              String    @db.VarChar(100)
+    lastname               String    @db.VarChar(100)
+    fellowship             String?   @db.VarChar(150)
+    personal_email         String?   @db.VarChar(200)
+    fellowship_amount      Int?      @default(0)
+    utorid                 String?   @db.VarChar(250)
+    time_registered        DateTime? @default(now())
+    program                String?   @db.VarChar(300)
+    university             String?   @db.VarChar(255)
+    faculty                String?   @db.VarChar(300)
+    expected_grad_year     Int?
+    degree                 String?   @db.VarChar(100)
+    phone                  String?   @db.VarChar(300)
+    profile_pic_url        String?   @db.VarChar(1000)
+    linkedin_url           String?   @db.VarChar(1000)
+    industry_list          String?   @db.Text
+    preferred_role         String?   @db.VarChar(250)
+    second_role            String?   @db.VarChar(250)
+    availability           Int?
+    person_type            String?   @db.VarChar(250)
+    hobbies                String?   @db.Text
+    stup_experience        String?   @db.VarChar(250)
+    bus_skills             String?   @db.Text
+    design_skills          String?   @db.Text
+    soft_lang_skills       String?   @db.Text
+    web_dev_skills         String?   @db.Text
+    soft_os_skills         String?   @db.Text
+    hard_dev_skills        String?   @db.Text
+    other_url              Int?
+    text_resume            String?   @db.Text
+    resume_url             String?   @db.VarChar(1000)
+    facebook_url           String?   @db.VarChar(1000)
+    source                 String    @db.VarChar(250)
+    has_team               Int?
+    hatchery_refer         String?   @db.VarChar(200)
+    subscribed             String?   @db.VarChar(100)
+    hatchery_id            String    @db.VarChar(100)
+    has_search             Boolean?  @default(false)
+    degree_search          String?   @db.VarChar(500)
+    faculty_search         String?   @db.VarChar(500)
+    program_search         String?   @db.VarChar(500)
+    fellowship_status      String?   @db.VarChar(100)
+    degrees                Int?
+    personal_info          String?   @db.Text
+    extra_degrees          String?   @db.Text
+    school                 String?   @db.Text
+    interview_date         DateTime? // default 0000:0000 or @default(now())
+    team_id                Int?
+    additional_notes       String?   @db.VarChar(500)
+    bat_cohort             Int?
+    fellowship_application String?   @db.Text
+    fellowship_notes       String?   @db.Text
+    promo                  String?   @db.VarChar(100)
+    skills                 String?   @db.VarChar(255)
+    suggested_skills       String?   @db.VarChar(255)
+    bio                    String?   @db.Text
+    website_url            String?   @db.VarChar(200)
+    osap                   Boolean?
+    ontario_resident       Boolean?
+    domestic_student       Boolean?
+    gender                 String?   @db.VarChar(10)
+    location               String?   @db.VarChar(250)
+    expertise              String?   @db.Text
+    interests              String?   @db.Text
+    hackathon              Int?      @default(0)
+    mbp                    String?   @db.VarChar(10)
+    vector                 String?   @db.Text
+    chat_online            Int?      @default(0)
+    hide_bat_profile       Int?      @default(0)
+
+    @@index([student_num])
+}
+
+// internal relationships
+model teams {
+    teamvalidation            String?   @db.VarChar(100)
+    team_id                   Int       @id @default(autoincrement())
+    kw_advisory_folder_id     String?   @db.Text
+    team_name                 String?   @db.VarChar(300)
+    time_registered           DateTime? @default(now())
+    status                    String    @db.VarChar(100)
+    cohort                    String    @db.VarChar(100)
+    project_id                Int
+    acceptance_letter         String?   @db.Text
+    shareholders_agreement    String?   @db.Text
+    problem_statement         String?   @db.Text
+    principle_investigator    String?   @db.VarChar(150)
+    team_image                String?   @db.VarChar(1000)
+    additional_notes          String?   @db.Text
+    problem_statement_text    String    @db.Text
+    looking_for_members       Boolean?  @default(false)
+    uninterested_in_nest      String?   @db.VarChar(100)
+    bat_cohort                Int?
+    promo                     String?   @db.VarChar(100)
+    skills_needed             String?   @db.VarChar(255)
+    skills_hired              String?   @db.VarChar(255)
+    go_to_market              String?   @default("NO") @db.VarChar(50)
+    development_solution      String?   @db.Text
+    development_solution_link String?   @db.Text
+    reference_letter          String?   @db.VarChar(500)
+    ownership_statement       String?   @db.VarChar(500)
+    perceived_competition     String?   @db.VarChar(500)
+    notes_updates             DateTime?
+    oce_applied               Boolean?  @default(false)
+    oce_received              Boolean?  @default(false)
+    cashflow                  String?   @db.VarChar(255)
+    nomination                String?   @db.VarChar(25)
+    demo_day                  String?   @db.VarChar(25)
+    progress                  String?   @db.VarChar(25)
+    location                  String?   @db.VarChar(250)
+    prizes                    String?   @default("0") @db.VarChar(10)
+    triage                    String?   @default("No") @db.VarChar(10)
+    startup_technology        String?   @db.Text
+    vector                    String?   @db.Text
+}
+
+//only 2 rows are using hatchery mining
+model team_deliverables {
+    id                   Int       @id @default(autoincrement())
+    team_id              Int
+    business_plan        String?   @db.Text
+    cash_flow            String?   @db.Text
+    one_pager            String?   @db.Text
+    pitch_deck           String?   @db.Text
+    hatchery_mining      String?   @db.Text
+    business_plan_date   DateTime? @db.Date
+    cash_flow_date       DateTime? @db.Date
+    one_pager_date       DateTime? @db.Date
+    pitch_deck_date      DateTime? @db.Date
+    hatchery_mining_date DateTime? @db.Date
+}
+
+//date_left not used on my end
+model team_member_rlshp {
+    student_id  String      @db.VarChar(200)
+    team_id     Int
+    date_joined DateTime    @db.Date
+    date_left   DateTime?   @db.Date
+
+    @@id([student_id, team_id, date_joined])
+}
+
+// title not used except for one row, internal relation
+model team_notes {
+    id           Int      @id @default(autoincrement())
+    team_id      Int
+    notes        String   @db.Text
+    creator      String   @db.VarChar(75)
+    created_on   DateTime
+    last_editor  String?  @db.VarChar(75)
+    last_edit_on DateTime
+    title        String?  @db.VarChar(75)
+}
+
+model team_project_rlshp {
+    team_id     Int
+    project_id  Int         @id
+    cohort_id   String      @db.VarChar(250)
+    date_joined DateTime    @db.Date
+    date_left   DateTime?   @db.Date
+}
+
+//team_mentor_relshp is currently empty, cannot find team_mentor_rlshp 
+model team_mentor_relshp {
+    team_mentor_id Int    @id @default(autoincrement())
+    // team team @relation(fields: [team_id], references: [team_id], onDelete: Cascade, onUpdate: Cascade)
+    team_id        String @db.VarChar(250)
+    // mentors_old mentors_old @relation(fields: [mentor_id], references: [mentors_id], onDelete: Cascade, onUpdate: Cascade)
+    mentor_id      String @db.VarChar(250)
+
+    @@index([team_id])
+    @@index([mentor_id])
+}
+
+model team_staff_rlshp {
+    id            Int       @id @default(autoincrement())
+    staff_id      String    @db.VarChar(50)
+    team_id       Int
+    time_assigned DateTime? @default(now())
+}

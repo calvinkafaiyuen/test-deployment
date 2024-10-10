@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Test</title>
+  <style>
+    .online {
+      color: green;
+    }
+    .offline {
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <h1>WebSocket Test</h1>
+  <button id="connectBtn">Connect to WebSocket</button>
+  <button id="sendBtn" disabled>Send Message</button>
+  <button id="getRoomsBtn" disabled>Get Rooms</button>
+  <select id="roomsList"></select>
+  <input type="text" id="messageInput" placeholder="Type your message here" disabled>
+  <pre id="output"></pre>
+
+  <script>
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const userIndex = urlParams.get('user_index');
+
+    const users = [{user_id: 3440, email: 'byronliao00@gmail.com'}, {user_id: 4753, email: 'sv8@uofthatchery.ca@gmail.com'}];
+    const output = document.getElementById('output');
+    const roomsList = document.getElementById('roomsList');
+    const messageInput = document.getElementById('messageInput');
+    let ws;
+    let currentRoomId = null;
+
+    document.getElementById('connectBtn').addEventListener('click', () => {
+      ws = new WebSocket('ws://localhost:4000');
+
+      ws.onopen = () => {
+        output.textContent += 'Connected to WebSocket server\n';
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('getRoomsBtn').disabled = false;
+        messageInput.disabled = false;
+        
+        // Notify server of online status
+        const setOnlineMessage = { type: 'setOnline', user_id: users[userIndex].user_id };
+        ws.send(JSON.stringify(setOnlineMessage));
+      };
+
+      ws.onmessage = (event) => {
+        const messageData = JSON.parse(event.data);
+        if (messageData.type === 'roomsList') {
+          roomsList.innerHTML = '';
+          messageData.rooms.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room.channel_id;
+            option.textContent = room.member_name + `[${room.member_id}]` + ` room[${room.channel_id}]`;
+            roomsList.appendChild(option);
+          });
+          output.textContent += 'Rooms list updated\n';
+        } else if (messageData.type === 'joined') {
+          // Clear previous messages
+          output.textContent = `Joined room ${messageData.channel_id}\n`;
+          messageData.messages.forEach(msg => {
+            output.textContent += `Message: ${msg.message_text}\n`;
+          });
+        } else if (messageData.type === 'message') {
+          output.textContent += `Received: ${messageData.message}\n`;
+        } else if (messageData.type === 'onlineStatus') {
+          updateOnlineStatus(messageData.onlineStatus);
+        }
+      };
+
+      ws.onclose = () => {
+        output.textContent += 'WebSocket connection closed\n';
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('getRoomsBtn').disabled = true;
+        messageInput.disabled = true;
+      };
+
+      ws.onerror = (error) => {
+        output.textContent += `WebSocket error: ${error.message}\n`;
+      };
+    });
+
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      if (!currentRoomId) {
+        output.textContent += 'Please select a room first\n';
+        return;
+      }
+      const messageContent = messageInput.value;
+      if (messageContent.trim() === '') {
+        output.textContent += 'Please type a message first\n';
+        return;
+      }
+      const message = { 
+        type: 'message', 
+        message: messageContent, 
+        user_id: users[userIndex].user_id, 
+        user_email: users[userIndex].email, 
+        channel_id: currentRoomId 
+      };
+      ws.send(JSON.stringify(message));
+      output.textContent += `Sent: ${JSON.stringify(message)}\n`;
+      messageInput.value = ''; // Clear the input field after sending the message
+    });
+
+    document.getElementById('getRoomsBtn').addEventListener('click', () => {
+      const message = { type: 'getRooms', user_id: users[userIndex].user_id };
+      ws.send(JSON.stringify(message));
+    });
+
+    roomsList.addEventListener('change', () => {
+      const selectedRoomId = roomsList.value;
+      if (selectedRoomId) {
+        const message = { type: 'join', channel_id: selectedRoomId, user_id: users[userIndex].user_id };
+        ws.send(JSON.stringify(message));
+        currentRoomId = selectedRoomId;
+        output.textContent = ''; // Clear previous messages when switching rooms
+      }
+    });
+
+    function updateOnlineStatus(onlineStatus) {
+      onlineStatus.forEach(status => {
+        const option = [...roomsList.options].find(opt => opt.value == status.user_id);
+        if (option) {
+          console.log('option',option);
+          option.textContent += status.is_online ? ' - online' : ' - offline';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_ENV: dev
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+      - "5432:5432"
+    command: >
+      sh -c "
+      if [ "$${APP_ENV}" = \"prod\" ]; then
+        npm run start;
+      else
+        npm run dev:servers;
+      fi
+      "

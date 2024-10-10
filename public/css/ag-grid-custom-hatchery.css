@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.ag-theme-balham {
+    --ag-header-height: 40px !important;
+    --ag-header-foreground-color: black !important;
+    --ag-header-background-color: white !important;
+    --ag-header-cell-hover-background-color: rgb(241 245 249) !important;
+    --ag-header-cell-moving-background-color: rgb(241 245 249) !important;
+}
+
+.ag-theme-quartz, .ag-theme-quartz-dark {
+    --ag-grid-size: 5px;
+    --ag-list-item-height: 20px;
+    --ag-font-size: 12px !important;
+    --ag-selected-row-background-color: rgb(241 245 249) !important;
+}
+
+.grid-container {
+    height:80vh;
+    width: 100%;
+}

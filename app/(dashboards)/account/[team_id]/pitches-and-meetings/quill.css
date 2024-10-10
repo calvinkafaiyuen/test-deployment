@@ -1,0 +1,17 @@
+.quill {
+  min-height: 300px;
+}
+
+.quill .ql-toolbar {
+  background-color: #F5F8FA;
+}
+
+.quill .ql-container {
+  height: 100%;
+  min-height: 300px;
+  padding-bottom: 40px;
+}
+
+.vp-center {
+  display: block !important;
+}
