@@ -3,10 +3,10 @@
   "scripts": {
     "build": "next build && rimraf .next/cache",
     "dev": "next dev",
-    "start": "concurrently \"npm run start:next\" \"npm run start:ws\"",
+    "start": "node_modules/next/dist/bin/next start",
     "start:next": "next start",
     "start:ws": "nodemon server.js",
-    "dev:servers": "concurrently \"next dev\" \"npm run start:ws\"",
+    "dev:servers": "next dev",
     "seed": "node -r dotenv/config ./scripts/seed.js",
     "lint": "next lint",
     "executeSeeding": "node ./scripts/seeding_postgres/execute-json-seeding.js"
